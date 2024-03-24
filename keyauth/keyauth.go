@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 )
 
 var sellerkey = os.Getenv("KAUTH_SELLERKEY")
@@ -34,13 +35,17 @@ type KQuery struct {
 	Data     string `qs:"data,omitempty"`
 }
 
-func send_keyauth_request(request_type, user, varname, data string) (map[string]interface{}, error) {
+func send_keyauth_request(request_type, user, varname, data string, timeout_optional ...time.Duration) (map[string]interface{}, error) {
 	jsonRes := make(map[string]interface{})
 	url := fmt.Sprintf("https://keyauth.win/api/seller/?sellerkey=%s&type=%s&user=%s&var=%s&data=%s", sellerkey, request_type, user, varname, data)
 
 	method := "GET"
 
-	client := &http.Client{}
+	var timeout = 20 * time.Second
+	if len(timeout_optional) > 0 {
+		timeout = timeout_optional[0]
+	}
+	client := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
@@ -81,13 +86,17 @@ func CheckUserExists(username string) bool {
 	return result["success"].(bool)
 }
 
-func SetVar(user, varname, data string) (map[string]interface{}, error) {
+func SetVar(user, varname, data string, timeout_optional ...time.Duration) (map[string]interface{}, error) {
 	jsonRes := make(map[string]interface{})
 	url := fmt.Sprintf("https://keyauth.win/api/seller/?sellerkey=%s&type=setvar&user=%s&var=%s&data=%s", sellerkey, user, varname, data)
 
 	method := "GET"
 
-	client := &http.Client{}
+	var timeout = 20 * time.Second
+	if len(timeout_optional) > 0 {
+		timeout = timeout_optional[0]
+	}
+	client := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
@@ -120,12 +129,16 @@ func SetVar(user, varname, data string) (map[string]interface{}, error) {
 	return jsonRes, nil
 }
 
-func GetVar(user, varname string) (map[string]interface{}, error) {
+func GetVar(user, varname string, timeout_optional ...time.Duration) (map[string]interface{}, error) {
 	jsonRes := make(map[string]interface{})
 	url := fmt.Sprintf("https://keyauth.win/api/seller/?sellerkey=%s&type=getvar&user=%s&var=%s", sellerkey, user, varname)
 
 	method := "GET"
-	client := &http.Client{}
+	var timeout = 20 * time.Second
+	if len(timeout_optional) > 0 {
+		timeout = timeout_optional[0]
+	}
+	client := &http.Client{Timeout: timeout}
 	req, err := http.NewRequest(method, url, nil)
 
 	if err != nil {
